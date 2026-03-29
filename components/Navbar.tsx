@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +18,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -28,6 +29,25 @@ export default function Navbar() {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node)
+      ) {
+        setMobileOpen(false);
+      }
+    };
+
+    if (mobileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [mobileOpen]);
 
   return (
     <>
@@ -44,9 +64,14 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center group-hover:bg-emerald-600 transition-colors">
+            {/* <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center group-hover:bg-emerald-600 transition-colors">
               <Zap className="w-4 h-4 text-white fill-white" />
-            </div>
+            </div> */}
+            <img
+              src="/AlgoraLabsMain.png"
+              alt="AlgoraLabs Logo"
+              className="w-8 h-8 object-contain"
+            />
             <span className="font-display font-700 text-[17px] text-gray-900 tracking-tight">
               Algora<span className="text-emerald-500">Labs</span>
             </span>
@@ -112,11 +137,12 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            ref={mobileMenuRef}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
-            className="fixed top-[64px] left-4 right-4 z-40 glass rounded-2xl p-4 shadow-xl shadow-gray-200/80 border border-gray-100 md:hidden"
+            className="fixed top-[64px] left-4 right-4 z-40 rounded-2xl p-4 md:hidden bg-white/35 backdrop-blur-xl backdrop-saturate-150 border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.7)]"
           >
             <nav className="flex flex-col gap-1">
               {navLinks.map((link) => {
@@ -125,10 +151,10 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "text-gray-700 hover:bg-gray-50"
+                        ? "bg-emerald-400/20 text-emerald-700"
+                        : "text-gray-700 hover:bg-emerald-400/[0.12]"
                     }`}
                   >
                     {link.label}
@@ -137,7 +163,7 @@ export default function Navbar() {
               })}
               <Link
                 href="/contact"
-                className="mt-2 px-4 py-3 bg-emerald-500 text-white text-sm font-semibold rounded-xl text-center hover:bg-emerald-600 transition-colors"
+                className="mt-2 px-4 py-3 bg-emerald-500/90 text-white text-sm font-semibold rounded-xl text-center hover:bg-emerald-500 transition-all duration-200 shadow-sm"
               >
                 Get Started
               </Link>
